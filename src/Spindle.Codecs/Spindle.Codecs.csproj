@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Hymie's decoders: plain C#, no audio, no UI, no native code. FLAC, MP3,
+       AAC, ALAC and WAV, each a small codec core on the shared parts here. -->
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Spindle.Tests" />
+  </ItemGroup>
+
+</Project>

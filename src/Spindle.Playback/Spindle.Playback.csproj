@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Hymie's engine and outputs: AudioQueue on the Mac, WASAPI on Windows,
+       PulseAudio/PipeWire on Linux, the equalizer and the spectrum. Compiled
+       into each app that plays (AlbumWall, Marginal). -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Spindle.Codecs\Spindle.Codecs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- tools/engine-check.cs, which checks Hymie's insides. -->
+    <InternalsVisibleTo Include="engine-check" />
+    <InternalsVisibleTo Include="Spindle.Tests" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- CS0414: HymieEngine._lastLevels is set and not read (kept from
+         AlbumWall's engine as it was). -->
+    <NoWarn>$(NoWarn);CS0414</NoWarn>
+  </PropertyGroup>
+
+</Project>

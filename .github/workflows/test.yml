@@ -1,0 +1,25 @@
+name: test
+
+# Every push and pull request: build and test on the three systems the apps
+# ship for. The apps' own CI builds Spindle again, Native AOT, inside each app.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet test Spindle.slnx -c Release -nologo

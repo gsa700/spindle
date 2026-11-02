@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsAotCompatible>false</IsAotCompatible>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <!-- Half a second of tones in each format, made with ffmpeg 9.0, and beside
+       each its ffmpeg decode as 32-bit floats (.f32): see DecoderTests. The
+       MP3 is Marginal's hand-written silent frames (ffmpeg here has no MP3
+       encoder), so it checks the frame path and gapless length, not accuracy
+       on music; tools/engine-check.cs compare does that on real files. -->
+  <ItemGroup>
+    <None Include="Fixtures/**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Spindle.Codecs\Spindle.Codecs.csproj" />
+    <ProjectReference Include="..\..\src\Spindle.Playback\Spindle.Playback.csproj" />
+  </ItemGroup>
+
+</Project>

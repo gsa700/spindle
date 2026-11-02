@@ -1,0 +1,50 @@
+# Working in this repository
+
+This repository is PUBLIC (since 2026-11-02). Everything committed and pushed
+here is published: it can be copied, and a force-push does not fully take it
+back. The rules are AlbumWall's, Deadwax's and Marginal's.
+
+## Privacy: before every commit and every push
+
+1. **Author email is the GitHub no-reply address**, never a personal one. In
+   every clone, on every machine, before the first commit:
+
+       git config user.email "298062495+gsa700@users.noreply.github.com"
+       git config user.name  "David Erickson"
+
+   Check with `git log -1 --format='%ae %ce'` after committing. A clone made
+   by `git submodule update` inside an app is a clone too: set it there.
+2. **No private network details in any file or commit message**: no LAN IP
+   addresses (10.x, 192.168.x, 172.16-31.x), no share paths built on them.
+   Use the machine's NAME instead (Techbench, Hambench, NASBOX are fine).
+3. **No personal email, keys, tokens or passwords** anywhere.
+4. **Scan before pushing**:
+
+       git log origin/main..HEAD --format='%ae%n%ce' | sort -u      # only the no-reply address
+       git diff origin/main..HEAD | grep -nE '\b(10(\.[0-9]{1,3}){3}|192\.168(\.[0-9]{1,3}){2}|172\.(1[6-9]|2[0-9]|3[01])(\.[0-9]{1,3}){2})\b'
+
+## What this is
+
+The code the three apps share, included in each as a git submodule at
+`spindle/` and compiled into each app (README.md). Nothing here is released
+on its own: no version, no tags needed. An app takes a change by moving its
+pin (a commit in the app: `git -C spindle pull` then commit the `spindle`
+change) and releasing.
+
+- **A change here is a change to every app that pins it.** Run the tests
+  here, then build and test each app on the new pin before moving it.
+- **Nothing app-specific**: no app's name, paths or settings in Spindle's
+  code. What differs is passed in by the app, or read from the running
+  program (PulseOutput names the stream after the program, for example).
+- **Native AOT**: every project is `IsAotCompatible`; a trim or AOT warning
+  here is a warning in every app.
+- **Every project stays independent of the apps**: Directory.Build.props here
+  stops an app's own one from reaching in.
+
+## Where things came from
+
+- `src/Spindle.Codecs` and `src/Spindle.Playback`: Hymie, moved from AlbumWall
+  (`src/AlbumWall.Codecs` and `src/AlbumWall.Playback` at 8f07680, AlbumWall
+  0.8.9) on 2026-11-02; Marginal's copy (from 2026-10-31) was the same code
+  less the equalizer and EndAfterCurrent. `tools/engine-check.cs` came with
+  it. Their history before that is in AlbumWall's repository.
