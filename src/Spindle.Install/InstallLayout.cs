@@ -66,7 +66,8 @@ public static class InstallLayout
     /// one of these after being unzipped straight into Programs by hand. These are treated as installed <em>in place</em> rather than as strays to
     /// be re-installed elsewhere, so upgrading doesn't leave an orphaned second copy behind.
     /// </summary>
-    public static string[] LegacyFolders => [AppInfo.Current.Name + "-win-x64", AppInfo.Current.Name + "-linux-x64"];
+    public static string[] LegacyFolders =>
+        [AppInfo.Current.Name + "-win-x64", AppInfo.Current.Name + "-linux-x64", AppInfo.Current.Name + "-linux-arm64"];
 
     /// <summary>
     /// Path comparison appropriate to the running OS. Windows paths are case-insensitive; Linux

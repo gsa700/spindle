@@ -461,6 +461,33 @@ public static class UpdateService
         var from = Path.GetDirectoryName(stagedExe)!;
         var to = Path.GetDirectoryName(target)!;
         var libraries = InstallLayout.NativeLibrariesIn(from);
+
+        // SUPERVISED (<APP>_SUPERVISED=1, set by a kiosk's launcher): something else restarts the
+        // app when it exits, so the helper must not, or two copies run - which is what AlbumWall's
+        // Pi kiosk got from the first update it took (2026-09-28: two walls). And the new build has
+        // to be in place BEFORE this process exits, because the supervisor starts whatever is there
+        // a second later. Linux lets a running program's files be replaced: each is copied beside
+        // itself and renamed over the old one, which is atomic; this process keeps running from the
+        // old ones until it exits. What it replaces is kept in previous/, which the launcher puts
+        // back if the new build keeps falling over (AlbumWall's kiosk/albumwall-kiosk; his call,
+        // 2026-10-27). From AlbumWall, 2026-11-02.
+        if (Supervised && !OperatingSystem.IsWindows())
+        {
+            InstallBeside(from, to, libraries.Append(ExeFileName).ToList(), ExeFileName);
+            if (File.Exists(marker)) File.Delete(marker);
+            var tidy = Path.Combine(helperDir, "tidy.sh");
+            File.WriteAllText(tidy, SupervisedScript + "\n");
+            Process.Start(new ProcessStartInfo("/bin/sh")
+            {
+                ArgumentList = { tidy, pid.ToString(System.Globalization.CultureInfo.InvariantCulture), OwnExtractionDir ?? "", stageRoot, helperDir },
+                UseShellExecute = false,
+                WorkingDirectory = Path.GetTempPath(),
+            });
+            Console.WriteLine($"[update] supervised: {ExeFileName}{(libraries.Count > 0 ? " and " + string.Join(", ", libraries) : "")} "
+                            + $"put in place in {to}, the old ones in {Path.Combine(to, PreviousFolder)}; the supervisor restarts it");
+            return;
+        }
+
         if (OperatingSystem.IsWindows())
         {
             var ps1 = Path.Combine(helperDir, "apply-update.ps1");
@@ -637,6 +664,76 @@ public static class UpdateService
         [script, pid.ToString(System.Globalization.CultureInfo.InvariantCulture), from, to, exeName, failedMarker, stageRoot,
          helperDir, ownExtractionDir ?? "", StartCheckSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture),
          .. libraries, "--", .. relaunchArgs];
+
+    /// <summary>Set by a kiosk's launcher: something restarts the app when it exits.</summary>
+    public static bool Supervised => Environment.GetEnvironmentVariable(AppInfo.Current.SupervisedVariable) == "1";
+
+    /// <summary>Where a supervised update keeps the build it replaced, beside the program.</summary>
+    public const string PreviousFolder = "previous";
+
+    /// <summary>
+    /// A supervised update, done by the app itself before it exits: the files it will replace are
+    /// copied into previous/ (a file not there before is noted as name.absent, so putting the old
+    /// build back removes it), then the libraries and last the program are copied in, each beside
+    /// itself and renamed over the old one. Anything failing puts the old files back and throws,
+    /// and the app keeps running the build it has.
+    /// </summary>
+    internal static void InstallBeside(string from, string to, IReadOnlyList<string> names, string exeName)
+    {
+        var previous = Path.Combine(to, PreviousFolder);
+        if (Directory.Exists(previous)) Directory.Delete(previous, recursive: true);
+        Directory.CreateDirectory(previous);
+        foreach (var n in names)
+        {
+            var t = Path.Combine(to, n);
+            if (File.Exists(t)) File.Copy(t, Path.Combine(previous, n));
+            else File.WriteAllText(Path.Combine(previous, n + ".absent"), "");
+        }
+
+        void Put(string source, string n)
+        {
+            var fresh = Path.Combine(to, "." + n + ".new");
+            File.Copy(source, fresh, overwrite: true);
+            if (n == exeName && !OperatingSystem.IsWindows())
+                File.SetUnixFileMode(fresh, File.GetUnixFileMode(fresh) | UnixFileMode.UserExecute
+                                           | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute);
+            File.Move(fresh, Path.Combine(to, n), overwrite: true);
+        }
+
+        try
+        {
+            foreach (var n in names) Put(Path.Combine(from, n), n);     // the program is last in names
+        }
+        catch
+        {
+            foreach (var n in names)
+            {
+                try
+                {
+                    var t = Path.Combine(to, n);
+                    if (File.Exists(Path.Combine(previous, n + ".absent"))) File.Delete(t);
+                    else if (File.Exists(Path.Combine(previous, n))) Put(Path.Combine(previous, n), n);
+                    File.Delete(Path.Combine(to, "." + n + ".new"));
+                }
+                catch { /* the rest still goes back */ }
+            }
+            throw;
+        }
+    }
+
+    /// <summary>SUPERVISED (a kiosk's launcher restarts the app): the app has already put the new
+    /// build in place before exiting, keeping the one it replaced in previous/ for the launcher to
+    /// put back if the new one keeps falling over. The helper swaps nothing and launches nothing,
+    /// or the launcher's copy and this one both run (2026-09-28, AlbumWall's Pi: two walls). It
+    /// only tidies up once the app has gone. $1 pid, $2 the old build's unpacked libraries or "",
+    /// $3 the staging folder, $4 its own folder.</summary>
+    public const string SupervisedScript = """
+        #!/bin/sh
+        pid=$1 oldx=$2 stage=$3 helper=$4
+        while kill -0 "$pid" 2>/dev/null; do sleep 0.3; done
+        [ -n "$oldx" ] && rm -rf "$oldx"
+        rm -rf "$stage" "$helper"
+        """;
 
     /// Beside the program; on the Mac beside the settings instead, since a
     /// file put inside the signed bundle would break its seal.

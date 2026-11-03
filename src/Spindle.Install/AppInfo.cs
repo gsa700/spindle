@@ -45,12 +45,20 @@ public sealed class AppInfo
     /// registration log, the log and the crash report (an index, a session).
     public IReadOnlyList<string> MoreDataFiles { get; init; } = [];
 
+    /// On Linux, a link ~/.local/bin/&lt;app&gt; to the installed program, so the
+    /// app starts by name from a terminal (AlbumWall's; the others have none).
+    public bool CommandLink { get; init; }
+
     /// Lower case, for Unix folders and file names ("marginal").
     public string Lower => Name.ToLowerInvariant();
 
     public string Repo => $"gsa700/{Lower}";
     public string BundleId => $"io.github.gsa700.{Name}";
     public string WindowsAppId => $"gsa700.{Name}";
+
+    /// Set to 1 by a kiosk's launcher, which restarts the app when it exits
+    /// (UpdateService.Supervised): ALBUMWALL_SUPERVISED, for AlbumWall's Pi.
+    public string SupervisedVariable => $"{Name.ToUpperInvariant()}_SUPERVISED";
 
     /// The environment variable that points the update check at a test feed.
     public string FeedVariable => $"{Name.ToUpperInvariant()}_UPDATE_FEED";

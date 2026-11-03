@@ -128,6 +128,25 @@ public static class InstallService
         Path.Combine(ProgramsDirectory, "applications", DesktopEntry.FileName);
 
     /// <summary>Icon path in the XDG hicolor theme, at the 256px size the embedded PNG carries.</summary>
+    /// <summary>Install and Uninstall write and delete under <see cref="ProgramsDirectory"/>: never
+    /// under a relative one, which is whatever folder the program was started from, and never
+    /// under one with a control character, which no menu entry can name (DesktopEntry.QuoteExec)
+    /// and which is refused here before anything is copied. From AlbumWall (its security review
+    /// 2026-10-26, L10), for every app since 2026-11-02.</summary>
+    private static void RequireProgramsDirectory()
+    {
+        if (!Path.IsPathFullyQualified(ProgramsDirectory))
+            throw new InstallBlockedException(
+                "This account has no home folder to install into, so nothing was changed.");
+        if (ProgramsDirectory.Any(char.IsControl))
+            throw new InstallBlockedException(
+                "The install folder's path holds a control character, so nothing was changed.");
+    }
+
+    /// <summary>The convenience link that lets the app be started by name from a terminal
+    /// (~/.local/bin/&lt;app&gt;), for an app that asks for one (AppInfo.CommandLink).</summary>
+    private static string SymlinkPath => Path.Combine(HomeDirectory, ".local", "bin", AppInfo.Current.Lower);
+
     private static string IconFilePath => Path.Combine(
         ProgramsDirectory, "icons", "hicolor", "256x256", "apps", AppInfo.Current.Lower + ".png");
 
@@ -208,6 +227,7 @@ public static class InstallService
             throw new InstallBlockedException(
                 "This is a development build, which is many files, and installing copies only one. "
                 + "Publish a release build and install that instead.");
+        RequireProgramsDirectory();
 
         Directory.CreateDirectory(InstallDirectory);
 
@@ -366,6 +386,16 @@ public static class InstallService
         else
         {
             steps.Add("entry already current");
+        }
+
+        if (AppInfo.Current.CommandLink)
+        {
+            try
+            {
+                Symlink.Ensure(SymlinkPath, exePath);
+            }
+            catch (IOException ex) { steps.Add($"symlink failed: {ex.Message}"); }
+            catch (UnauthorizedAccessException ex) { steps.Add($"symlink failed: {ex.Message}"); }
         }
 
         if (desktopShortcut) steps.Add(EnsureDesktopShortcut(exePath));
@@ -609,6 +639,10 @@ public static class InstallService
             if (removed + kept > 0)
                 Console.WriteLine($"[install] unpacked folders of older builds: {removed} removed"
                                 + (kept > 0 ? $", {kept} could not be" : "") + $" ({root})");
+            // A build that unpacks nothing (Native AOT) leaves the root empty once the old
+            // ones are gone: that goes too (from AlbumWall).
+            if (mine is null && !Directory.EnumerateFileSystemEntries(root).Any())
+                Directory.Delete(root);
         }
         catch { /* a cache; nothing depends on it being tidy */ }
     }
@@ -637,6 +671,7 @@ public static class InstallService
         // while saying it removed the program (security review 2026-10-24, L17).
         if (!CanInstall)
             throw new InstallBlockedException($"On a Mac, {AppInfo.Current.Name} is removed by dragging {AppInfo.Current.Name}.app from Applications to the Bin.");
+        RequireProgramsDirectory();
         Unregister();
 
         var toDelete = new List<string>();
@@ -738,6 +773,7 @@ public static class InstallService
         {
             var path = Path.Combine(DataDir, name);
             if (File.Exists(path)) yield return path;
+            if (File.Exists(path + ".bak")) yield return path + ".bak";
         }
     }
 
@@ -758,6 +794,7 @@ public static class InstallService
         TryDelete(IconFilePath);
         // tools/install.sh used to put an SVG beside the PNG; a copy it installed leaves one.
         TryDelete(Path.Combine(ProgramsDirectory, "icons", "hicolor", "scalable", "apps", AppInfo.Current.Lower + ".svg"));
+        if (AppInfo.Current.CommandLink) TryDelete(SymlinkPath);
         Run("update-desktop-database", [Path.GetDirectoryName(DesktopFilePath)!]);
     }
 

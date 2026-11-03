@@ -66,3 +66,11 @@ change) and releasing.
   and InstallCommandLineTests run as a made-up "TestApp" (TestAppInfo.cs); the
   Mac update tests stay in each app, since they check the real notarized
   /Applications/<App>.app.
+- From AlbumWall's install and update code, 2026-11-02, when AlbumWall moved
+  onto Spindle.Install (its scripts were already the same): the supervised
+  update for a kiosk (<APP>_SUPERVISED=1: the app puts the new build in place
+  itself, the old one in previous/, and the launcher restarts it; tested in
+  SupervisedUpdateTests), the refusal to install under a relative or
+  control-character path (RequireProgramsDirectory), the optional
+  ~/.local/bin/<app> link (AppInfo.CommandLink), and Uninstall removing
+  settings' .bak copies and an emptied unpacking folder.
