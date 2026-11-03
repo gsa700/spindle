@@ -3,6 +3,9 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsAotCompatible>false</IsAotCompatible>
+    <!-- TestApp's version, unlike Spindle's 1.0.0: so a test of the version
+         the update check uses can tell the app's from Spindle's own. -->
+    <Version>9.8.7</Version>
   </PropertyGroup>
 
   <ItemGroup>

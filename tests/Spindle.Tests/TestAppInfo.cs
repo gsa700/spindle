@@ -17,5 +17,6 @@ internal static class TestAppInfo
         Name = "TestApp",
         Description = "An app that exists only in Spindle's tests",
         DataDir = DataDir,
+        AppAssembly = typeof(TestAppInfo).Assembly,
     });
 }

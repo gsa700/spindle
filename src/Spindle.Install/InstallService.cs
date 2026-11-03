@@ -92,14 +92,14 @@ public static class InstallService
     {
         get
         {
-            var v = Assembly.GetExecutingAssembly()
+            var v = AppInfo.Current.AppAssembly
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "0.0.0";
             var plus = v.IndexOf('+');
             return plus >= 0 ? v[..plus] : v;
         }
     }
 
-    /// <summary>Where settings live: ~/.config/marginal, on every platform.</summary>
+    /// <summary>Where settings live: ~/.config/&lt;app&gt;, on every platform.</summary>
     public static string DataDir => AppInfo.Current.DataDir;
 
     /// <summary>The MusicBrainz answers Marginal keeps (MusicBrainzClient). A cache: it goes with the program.</summary>
@@ -336,7 +336,7 @@ public static class InstallService
             // changed once, and an installed copy that kept the first one forever would make
             // every later icon invisible on the machines that matter most.
             Directory.CreateDirectory(Path.GetDirectoryName(IconFilePath)!);
-            using var src = Assembly.GetExecutingAssembly().GetManifestResourceStream("app-icon.png");
+            using var src = AppInfo.Current.AppAssembly.GetManifestResourceStream("app-icon.png");
             if (src is not null)
             {
                 using var mem = new MemoryStream();

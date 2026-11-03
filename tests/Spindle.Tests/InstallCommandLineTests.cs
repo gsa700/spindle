@@ -1,3 +1,4 @@
+using System.Reflection;
 using Spindle.Install;
 
 namespace Spindle.Tests;
@@ -23,6 +24,17 @@ public class InstallCommandLineTests
     public void A_slash_is_a_switch_only_on_windows() =>
         Assert.Equal(OperatingSystem.IsWindows() ? InstallAction.Uninstall : InstallAction.None,
             InstallCommandLine.Parse(["/uninstall"]).Action);
+
+    /// The version is the app's (AppInfo.AppAssembly), never Spindle.Install's
+    /// own: that one has no app version, and every copy said it was 1.0.0.
+    [Fact]
+    public void The_current_version_is_the_apps_not_spindles()
+    {
+        var app = typeof(TestAppInfo).Assembly
+            .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
+        Assert.Equal("9.8.7", app);
+        Assert.Equal(app, InstallService.CurrentVersion);
+    }
 
     [Fact]
     public void A_staged_program_must_say_its_version()

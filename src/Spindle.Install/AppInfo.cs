@@ -4,11 +4,14 @@
 // was copied to Marginal and hardened there, and moved here 2026-11-02); what
 // differs is only which app it is. Each app says so once, first thing in Main:
 //
-//     AppInfo.Use(new AppInfo { Name = "Marginal", Description = "...", DataDir = ... });
+//     AppInfo.Use(new AppInfo { Name = "Marginal", Description = "...", DataDir = ...,
+//                               AppAssembly = typeof(Program).Assembly });
 //
 // Everything else follows from the name, by the conventions all three apps keep:
 // the repository gsa700/<name>, the bundle io.github.gsa700.<Name>, the Windows
 // app id gsa700.<Name>, the folders, the log, the .desktop file.
+
+using System.Reflection;
 
 namespace Spindle.Install;
 
@@ -23,6 +26,12 @@ public sealed class AppInfo
 
     /// Where the app keeps its settings (the folder of settings.json).
     public required string DataDir { get; init; }
+
+    /// The app's own assembly (typeof(Program).Assembly): its version is the
+    /// one the update check compares, and its app-icon.png the one installed.
+    /// Not Spindle's, which carries no app version (found 2026-11-02 before
+    /// release: every copy said it was 1.0.0, and none would have updated).
+    public required Assembly AppAssembly { get; init; }
 
     /// The .desktop entry's categories (freedesktop.org menu spec).
     public IReadOnlyList<string> DesktopCategories { get; init; } = ["AudioVideo", "Audio"];
