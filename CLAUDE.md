@@ -96,3 +96,8 @@ change) and releasing.
   control-character path (RequireProgramsDirectory), the optional
   ~/.local/bin/<app> link (AppInfo.CommandLink), and Uninstall removing
   settings' .bak copies and an emptied unpacking folder.
+- `ScreenReader` in Spindle.Core (2026-11-03): AlbumWall's AskScreenReader
+  (2026-10-21). Avalonia 12.1 has AT-SPI only in its X11 backend, so on native
+  Wayland a screen reader cannot see an app; each app's NativeWayland adds
+  `&& !ScreenReader.Running` and goes through XWayland instead. Deadwax and
+  Marginal lacked it (Techbench, 2026-11-03). Tests: ScreenReaderTests.
