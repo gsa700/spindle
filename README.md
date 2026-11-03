@@ -42,8 +42,12 @@ change here when its pin is moved forward and it is released.
   the console (`ConsoleLogSink`). Each app says how its windows are drawn on
   Linux once at startup (`WindowSystem.NativeWayland`); its look stays its own.
 
-More moves in from the apps over time: text size, the Mac window, the drawn
-frame, the install dialogs.
+  Also `TextSize`, the windows drawn larger for reading (Preferences,
+  Accessibility), and `MacWindow`, what Avalonia does not offer about a Mac
+  window (zoom instead of full screen, the traffic lights, word of displays
+  changing).
+
+More moves in from the apps over time: the drawn frame, the install dialogs.
 
 ## Checking it
 

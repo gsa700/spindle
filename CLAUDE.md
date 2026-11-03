@@ -72,9 +72,15 @@ change) and releasing.
   DrawnCaptions (AlbumWall's, in their newest form, which Deadwax lacked:
   screen-reader names, no guessed gsettings). Each app sets
   WindowSystem.NativeWayland in Main; how it decides stays its own. Avalonia's
-  version here must match the apps'. Not moved yet, because the copies have
-  forked: TextSize (Marginal's differs from AlbumWall's and Deadwax's),
-  MacWindow (AlbumWall's has more), Marginal's DrawnFrame.
+  version here must match the apps'.
+- `TextSize` and `MacWindow` in Spindle.Ui (2026-11-02, the window step's
+  second part). TextSize merges AlbumWall's/Deadwax's copy (follows content a
+  window puts in later) with Marginal's (wraps at once so a drawn frame goes
+  outside the scale; smallest sizes held to the screen; a maximized window not
+  resized; Factor): it follows new content except a frame that holds the scale.
+  MacWindow is AlbumWall's whole (the others' copy was it without HideTrafficLights,
+  Nudge, WatchDisplays and the remembered bar height); its Objective-C class is
+  SpindleDisplayWatcher. Not moved: Marginal's DrawnFrame.
 - From AlbumWall's install and update code, 2026-11-02, when AlbumWall moved
   onto Spindle.Install (its scripts were already the same): the supervised
   update for a kiosk (<APP>_SUPERVISED=1: the app puts the new build in place
