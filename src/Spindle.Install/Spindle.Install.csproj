@@ -11,6 +11,8 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Spindle.Tests" />
+    <!-- ToolPath, for WindowButtons (gsettings). -->
+    <InternalsVisibleTo Include="Spindle.Ui" />
   </ItemGroup>
 
 </Project>

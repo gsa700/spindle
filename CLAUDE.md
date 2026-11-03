@@ -66,6 +66,15 @@ change) and releasing.
   and InstallCommandLineTests run as a made-up "TestApp" (TestAppInfo.cs); the
   Mac update tests stay in each app, since they check the real notarized
   /Applications/<App>.app.
+- `src/Spindle.Ui` (2026-11-02, the window step's first part): ConsoleLogSink
+  (identical in all three), WaylandShell (all three, app id now AppInfo's),
+  WindowPlacement (Deadwax's, copied to Marginal), WindowButtons and
+  DrawnCaptions (AlbumWall's, in their newest form, which Deadwax lacked:
+  screen-reader names, no guessed gsettings). Each app sets
+  WindowSystem.NativeWayland in Main; how it decides stays its own. Avalonia's
+  version here must match the apps'. Not moved yet, because the copies have
+  forked: TextSize (Marginal's differs from AlbumWall's and Deadwax's),
+  MacWindow (AlbumWall's has more), Marginal's DrawnFrame.
 - From AlbumWall's install and update code, 2026-11-02, when AlbumWall moved
   onto Spindle.Install (its scripts were already the same): the supervised
   update for a kiosk (<APP>_SUPERVISED=1: the app puts the new build in place

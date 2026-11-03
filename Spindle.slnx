@@ -4,6 +4,7 @@
     <Project Path="src/Spindle.Core/Spindle.Core.csproj" />
     <Project Path="src/Spindle.Install/Spindle.Install.csproj" />
     <Project Path="src/Spindle.Playback/Spindle.Playback.csproj" />
+    <Project Path="src/Spindle.Ui/Spindle.Ui.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Spindle.Tests/Spindle.Tests.csproj" />

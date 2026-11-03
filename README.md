@@ -36,7 +36,14 @@ change here when its pin is moved forward and it is released.
   startup (`AppInfo.Use`); everything else follows from its name. No UI: the
   dialogs stay in each app.
 
-More moves in from the apps over time: the window frame.
+- **`src/Spindle.Ui`** (Avalonia): the window buttons drawn to the desktop's
+  own layout (`WindowButtons`, `DrawnCaptions`), where windows open
+  (`WindowPlacement`), the Wayland app id (`WaylandShell`) and Avalonia's log in
+  the console (`ConsoleLogSink`). Each app says how its windows are drawn on
+  Linux once at startup (`WindowSystem.NativeWayland`); its look stays its own.
+
+More moves in from the apps over time: text size, the Mac window, the drawn
+frame, the install dialogs.
 
 ## Checking it
 

@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The window code the apps share (Avalonia): the drawn window buttons and
+       captions, where windows open, Wayland's app id, Avalonia's log in the
+       console. The apps keep their own look (the wbtn, round and square style
+       classes are theirs to style). Avalonia here is the apps' version: an
+       upgrade changes it here and in each app together. -->
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Spindle.Install\Spindle.Install.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Spindle.Tests" />
+  </ItemGroup>
+
+</Project>
