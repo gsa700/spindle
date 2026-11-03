@@ -250,8 +250,8 @@ public static class UpdateService
     /// GitHub's /releases/latest answer, when it is a published app release.
     private static JsonElement? Stable(JsonElement r) =>
         r.ValueKind == JsonValueKind.Object
-        && JsonText.Str(r, "tag_name") is { } tag && ReleaseFeed.IsAppTag(tag)
-        && !JsonText.True(r, "draft") && !JsonText.True(r, "prerelease") ? r : null;
+        && Json.Str(r, "tag_name") is { } tag && ReleaseFeed.IsAppTag(tag)
+        && !Json.True(r, "draft") && !Json.True(r, "prerelease") ? r : null;
 
     /// Where the update was downloaded and unpacked: a new private folder each
     /// time (mode 0700, unique name), never a fixed name in the shared temp

@@ -27,7 +27,10 @@ change here when its pin is moved forward and it is released.
   `ReleaseFeed` (the Edge and Stable channels, read from GitHub),
   `WebLimits` (what is accepted from MusicBrainz and the Cover Art Archive),
   `AppVersion`, `LogFile` (the console teed to `<app>.log`) and `Diagnostics`
-  (the crash report and "Copy diagnostics"). Namespace `Spindle`.
+  (the crash report and "Copy diagnostics"); and `LrcLibClient` (lyrics from
+  LRCLIB, with its retries and the rule for a match used unasked), `Lrc`
+  (synced lyrics read, written and timed by hand) and `Json` (web answers read
+  without throwing on the wrong shape). Namespace `Spindle`.
 
 - **`src/Spindle.Install`**: installing, updating and uninstalling on
   Windows, Linux and the Mac: the per-user install and its registration, the

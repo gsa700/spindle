@@ -56,6 +56,13 @@ change) and releasing.
   stays in each app. Their tests came from Deadwax and Marginal
   (VersionOrderTests, ReleaseFeedTests, the WebLimits ones from Deadwax's
   SecurityTests); DiagnosticsTests are new.
+- In `src/Spindle.Core` too (2026-11-02, for Deadwax's lyrics at rip time):
+  LrcLib (LrcLibClient: lookup, retries, Fit/Rank, the 2 s rule), Lrc (LRC read,
+  write, timing by hand; LyricsKind and KindOf, from Marginal's TrackReader)
+  and Json (from Marginal.Core; it replaced Spindle.Install's JsonText). The
+  client takes a userAgent; without one, the program's name and version.
+  Tests: LrcTests, LrcLibTests (from Marginal's LyricsTests, LrcLibRetryTests
+  and ParsingSecurityTests).
 - `src/Spindle.Install` (2026-11-02): the install and update code, from
   Deadwax by way of Marginal (whose copy had its 2026-10-31 hardening: download
   size and stall limits, the staged program must say its version, Stable takes
