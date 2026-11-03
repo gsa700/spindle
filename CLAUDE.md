@@ -87,7 +87,7 @@ change) and releasing.
   resized; Factor): it follows new content except a frame that holds the scale.
   MacWindow is AlbumWall's whole (the others' copy was it without HideTrafficLights,
   Nudge, WatchDisplays and the remembered bar height); its Objective-C class is
-  SpindleDisplayWatcher. Not moved: Marginal's DrawnFrame.
+  SpindleDisplayWatcher.
 - From AlbumWall's install and update code, 2026-11-02, when AlbumWall moved
   onto Spindle.Install (its scripts were already the same): the supervised
   update for a kiosk (<APP>_SUPERVISED=1: the app puts the new build in place
@@ -101,3 +101,9 @@ change) and releasing.
   Wayland a screen reader cannot see an app; each app's NativeWayland adds
   `&& !ScreenReader.Running` and goes through XWayland instead. Deadwax and
   Marginal lacked it (Techbench, 2026-11-03). Tests: ScreenReaderTests.
+- `DrawnFrame` in Spindle.Ui (2026-11-03, the window step's third part):
+  Marginal's whole (made from Deadwax's frame, itself AlbumWall's: corners,
+  shadow, hairline, window buttons, resize band, bar drag and double click;
+  the Mac keeps its own title bar). Its colours are the app's resources by
+  name (GroundKey, SoftKey, EdgeKey; Marginal's names by default). Deadwax
+  keeps its own frame inside its MainWindow.
