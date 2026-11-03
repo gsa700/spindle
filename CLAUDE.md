@@ -48,3 +48,11 @@ change) and releasing.
   0.8.9) on 2026-11-02; Marginal's copy (from 2026-10-31) was the same code
   less the equalizer and EndAfterCurrent. `tools/engine-check.cs` came with
   it. Their history before that is in AlbumWall's repository.
+- `src/Spindle.Core` (2026-11-02): VersionOrder and ReleaseFeed (the same
+  code in all three apps), WebLimits and AppVersion (Deadwax's, copied to
+  Marginal), LogFile and Diagnostics (AlbumWall's, copied to the other two).
+  What was app-specific is now handed in: `LogFile.Start(folder, name)` and
+  `Diagnostics.CatchCrashes(name, version, display)`; the UI thread's handler
+  stays in each app. Their tests came from Deadwax and Marginal
+  (VersionOrderTests, ReleaseFeedTests, the WebLimits ones from Deadwax's
+  SecurityTests); DiagnosticsTests are new.

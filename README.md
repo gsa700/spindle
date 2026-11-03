@@ -22,8 +22,15 @@ change here when its pin is moved forward and it is released.
     (CoreAudio's AudioQueue on the Mac, WASAPI on Windows, PulseAudio or
     PipeWire on Linux), the equalizer and the spectrum.
 
+- **`src/Spindle.Core`**, the small things every app needs alike:
+  `VersionOrder` (how release versions order, pre-releases included),
+  `ReleaseFeed` (the Edge and Stable channels, read from GitHub),
+  `WebLimits` (what is accepted from MusicBrainz and the Cover Art Archive),
+  `AppVersion`, `LogFile` (the console teed to `<app>.log`) and `Diagnostics`
+  (the crash report and "Copy diagnostics"). Namespace `Spindle`.
+
 More moves in from the apps over time: the install and update code, the
-window frame, the small helpers.
+window frame.
 
 ## Checking it
 
@@ -33,7 +40,8 @@ window frame, the small helpers.
 
 The tests decode short fixtures of each format against ffmpeg's decode of
 them, check seeks, a file cut short, a header claiming an impossible rate,
-and the equalizer. `engine-check` does the same on real music.
+and the equalizer; and they cover Spindle.Core: version order, the release
+feed, the web limits, the log and the crash report. `engine-check` does the same on real music.
 
 ## License
 

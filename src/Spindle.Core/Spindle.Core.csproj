@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The small things every app needs alike: how versions order, the two
+       release channels, the limits on what comes from the web, the app's
+       version, the log and the crash report. No UI, no native code. -->
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Spindle.Tests" />
+  </ItemGroup>
+
+</Project>
