@@ -30,7 +30,7 @@ public sealed class DiagnosticsTests : IDisposable
         LogFile.Start(_dir, "testapp.log");
         Console.WriteLine("second run");
 
-        var last = File.ReadAllText(Log + ".1");
+        var last = ReadShared(Log + ".1");
         Assert.Contains("[log] ", last);
         Assert.Contains("first run says this", last);
         Assert.Contains("and this went wrong", last);          // errors too

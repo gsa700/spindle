@@ -17,6 +17,7 @@ public static class LogFile
     public static string Path { get; private set; } = "";
 
     private static (TextWriter Out, TextWriter Error)? _console;
+    private static StreamWriter? _file;
 
     /// `folder` is the app's settings folder, `name` its log ("deadwax.log").
     /// Best effort. A log that cannot be opened must never stop the app
@@ -26,6 +27,14 @@ public static class LogFile
         Path = System.IO.Path.Combine(folder, name);
         try
         {
+            // A second Start closes the file the first one opened (Windows would
+            // keep it locked, under its new name, for as long as the process runs).
+            _console ??= (Console.Out, Console.Error);
+            Console.SetOut(_console.Value.Out);
+            Console.SetError(_console.Value.Error);
+            _file?.Dispose();
+            _file = null;
+
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path)!);
             if (File.Exists(Path)) File.Move(Path, Path + ".1", overwrite: true);
 
@@ -37,7 +46,7 @@ public static class LogFile
             // so the line that said what failed was the one line not kept.
             // Around the console as it was before any Start, so a second Start
             // (a test, a restart in one process) tees once, not twice.
-            _console ??= (Console.Out, Console.Error);
+            _file = file;
             Console.SetOut(new Tee(_console.Value.Out, file));
             Console.SetError(new Tee(_console.Value.Error, file));
             Console.WriteLine($"[log] {DateTime.Now:yyyy-MM-dd HH:mm:ss}  pid {Environment.ProcessId}  "
