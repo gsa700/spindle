@@ -23,7 +23,7 @@ using Avalonia.VisualTree;
 
 namespace Spindle.Ui;
 
-internal static class DrawnCaptions
+public static class DrawnCaptions
 {
     public static void FollowTheDesktop()
     {

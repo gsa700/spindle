@@ -23,7 +23,7 @@ namespace Spindle.Ui;
 /// and any failure is logged and ignored: the worst case is the generic icon we already had. When
 /// Avalonia sets an app_id itself, delete this.
 /// </summary>
-internal static class WaylandShell
+public static class WaylandShell
 {
     /// The .desktop file's name without the extension, which is what GNOME matches on.
     /// The .desktop file's name without .desktop: what InstallService and the
