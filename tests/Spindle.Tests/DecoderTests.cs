@@ -86,7 +86,7 @@ public sealed class DecoderTests
         var path = Path.Combine(Path.GetTempPath(), $"spindle-rate-{Guid.NewGuid():N}.wav");
         File.WriteAllBytes(path, bytes);
         try { Assert.ThrowsAny<IOException>(() => AudioTracks.Open("rate.wav", path)); }
-        finally { File.Delete(path); }
+        finally { DeleteSoon(path); }
     }
 
     /// A file cut short (a copy stopped part way, a disk error) ends early or
@@ -113,8 +113,21 @@ public sealed class DecoderTests
             var whole = Ffmpeg(file).Length / AudioTracks.Open(file, Fixture(file)).Channels;
             Assert.True(frames < whole, $"{frames} of {whole} frames from two thirds of the file");
         }
-        finally { File.Delete(path); }
+        finally { DeleteSoon(path); }
     }
 
     private static int IndexOf(byte[] bytes, ReadOnlySpan<byte> what) => bytes.AsSpan().IndexOf(what);
+
+    /// Deletes a file Hymie may still be reading: a track opens at once and its
+    /// bytes arrive in the background (TrackBytes.Fill), which closes the file
+    /// when it has read it, a moment after a refusal. Windows will not delete a
+    /// file that is open (CI, 2026-11-02), so this tries for a second.
+    private static void DeleteSoon(string path)
+    {
+        for (var i = 0; ; i++)
+        {
+            try { File.Delete(path); return; }
+            catch (IOException) when (i < 20) { Thread.Sleep(50); }
+        }
+    }
 }
