@@ -56,3 +56,13 @@ change) and releasing.
   stays in each app. Their tests came from Deadwax and Marginal
   (VersionOrderTests, ReleaseFeedTests, the WebLimits ones from Deadwax's
   SecurityTests); DiagnosticsTests are new.
+- `src/Spindle.Install` (2026-11-02): the install and update code, from
+  Deadwax by way of Marginal (whose copy had its 2026-10-31 hardening: download
+  size and stall limits, the staged program must say its version, Stable takes
+  only app tags, the redirect must land on GitHub; and Windows-only `/switch`
+  parsing). Every app name, repository, bundle id, folder and file name is
+  AppInfo's now (AppInfo.cs). ToolPath and JsonText are internal, so the apps'
+  own ToolPath does not clash. Tests: UpdateApplyTests, InstallSecurityTests
+  and InstallCommandLineTests run as a made-up "TestApp" (TestAppInfo.cs); the
+  Mac update tests stay in each app, since they check the real notarized
+  /Applications/<App>.app.

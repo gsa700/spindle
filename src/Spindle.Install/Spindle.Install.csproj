@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Installing, updating and uninstalling an app, on Windows, Linux and the
+       Mac: the same in every app, told which app by AppInfo. From Deadwax by
+       way of Marginal (whose copy had the 2026-10-31 hardening). No UI: the
+       dialogs (InstallFlow, MacInstaller) stay in each app. -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\Spindle.Core\Spindle.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Spindle.Tests" />
+  </ItemGroup>
+
+</Project>

@@ -29,8 +29,14 @@ change here when its pin is moved forward and it is released.
   `AppVersion`, `LogFile` (the console teed to `<app>.log`) and `Diagnostics`
   (the crash report and "Copy diagnostics"). Namespace `Spindle`.
 
-More moves in from the apps over time: the install and update code, the
-window frame.
+- **`src/Spindle.Install`**: installing, updating and uninstalling on
+  Windows, Linux and the Mac: the per-user install and its registration, the
+  update check, download, checksum and version checks, and the helper that
+  swaps the program while it is closed. Each app says which app it is once at
+  startup (`AppInfo.Use`); everything else follows from its name. No UI: the
+  dialogs stay in each app.
+
+More moves in from the apps over time: the window frame.
 
 ## Checking it
 
