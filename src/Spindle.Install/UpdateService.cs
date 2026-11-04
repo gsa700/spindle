@@ -462,6 +462,12 @@ public static class UpdateService
         var to = Path.GetDirectoryName(target)!;
         var libraries = InstallLayout.NativeLibrariesIn(from);
 
+        // The license texts come too (InstallLayout.CopyLicenses): copied here, now, since nothing
+        // has them open or mapped and they are not needed to run, so the helpers stay the program
+        // and its libraries. If the new program then falls over and the old files go back, the
+        // texts stay the new ones, which is harmless.
+        InstallLayout.CopyLicensesLogged(from, to, "update");
+
         // SUPERVISED (<APP>_SUPERVISED=1, set by a kiosk's launcher): something else restarts the
         // app when it exits, so the helper must not, or two copies run - which is what AlbumWall's
         // Pi kiosk got from the first update it took (2026-09-28: two walls). And the new build has

@@ -107,3 +107,10 @@ change) and releasing.
   the Mac keeps its own title bar). Its colours are the app's resources by
   name (GroundKey, SoftKey, EdgeKey; Marginal's names by default). Deadwax
   keeps its own frame inside its MainWindow.
+- License files on install and update (2026-11-03): `InstallLayout.CopyLicenses`
+  puts LICENSE, THIRD-PARTY-NOTICES.md and licenses/ from beside the program
+  (a release zip has them) into the installed copy, on install and on every
+  Linux/Windows update (in C#, before the helper starts; the helpers still move
+  only the program and its libraries). Before, no installed copy had them
+  (Techbench, Mobilenode). Tests: LicenseCopyTests. The Mac bundle carries them
+  in Contents/Resources.

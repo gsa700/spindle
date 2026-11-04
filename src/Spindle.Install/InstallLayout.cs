@@ -165,8 +165,8 @@ public static class InstallLayout
     /// <summary>
     /// The native libraries a Native AOT build (0.8) has beside its program on Linux and Windows;
     /// a single-file build keeps them inside itself, so none of these are beside it. Install and
-    /// update copy these and nothing else of what sits beside the program, since a loose copy may
-    /// be sitting in Downloads. tools/release.sh checks a release carries exactly these.
+    /// update copy these, and the license files (CopyLicenses), and nothing else of what sits
+    /// beside the program, since a loose copy may be sitting in Downloads. tools/release.sh checks a release carries exactly these.
     /// </summary>
     public static IReadOnlyList<string> NativeLibraries(bool windows) => windows
         ? AppInfo.Current.NativeLibrariesWindows
@@ -175,4 +175,81 @@ public static class InstallLayout
     /// <summary>Those of <see cref="NativeLibraries(bool)"/> present in <paramref name="directory"/>.</summary>
     public static IReadOnlyList<string> NativeLibrariesIn(string directory) =>
         NativeLibraries(OperatingSystem.IsWindows()).Where(n => File.Exists(System.IO.Path.Combine(directory, n))).ToList();
+
+    /// <summary>
+    /// What the licenses ask to travel with the program, beside it in a release zip (each app's
+    /// release.sh puts them there): the app's own license, the third-party notices, and the
+    /// licenses/ folder of license texts. Until 2026-11-03 install and update copied only the
+    /// program and its libraries, so no installed copy had them (Techbench and Mobilenode).
+    /// </summary>
+    public static readonly IReadOnlyList<string> LicenseFiles = ["LICENSE", "THIRD-PARTY-NOTICES.md"];
+
+    /// <summary>The folder of license texts beside the program.</summary>
+    public const string LicenseFolder = "licenses";
+
+    /// <summary>
+    /// Copies the license files and the licenses/ folder from <paramref name="from"/> (a release
+    /// unpacked, or the copy being installed) into <paramref name="to"/>, each in under a temporary
+    /// name and renamed over the old one; texts in <c>to/licenses</c> that the new copy no longer
+    /// has are removed. Only plain files, and only the folder's top level. Nothing here is needed
+    /// to run, so a failure is reported and never stops an install or an update. Returns what was
+    /// copied, for the log; nothing when <paramref name="from"/> has none (a build without them).
+    /// </summary>
+    public static IReadOnlyList<string> CopyLicenses(string from, string to)
+    {
+        var copied = new List<string>();
+        if (SamePath(from, to)) return copied;
+        foreach (var name in LicenseFiles)
+            if (PlainFile(System.IO.Path.Combine(from, name)))
+            {
+                CopyOver(System.IO.Path.Combine(from, name), System.IO.Path.Combine(to, name));
+                copied.Add(name);
+            }
+
+        var src = System.IO.Path.Combine(from, LicenseFolder);
+        if (!Directory.Exists(src) || new DirectoryInfo(src).LinkTarget is not null) return copied;
+        var dst = System.IO.Path.Combine(to, LicenseFolder);
+        Directory.CreateDirectory(dst);
+        var names = Directory.GetFiles(src).Where(PlainFile).Select(System.IO.Path.GetFileName).OfType<string>().ToHashSet();
+        foreach (var name in names)
+            CopyOver(System.IO.Path.Combine(src, name), System.IO.Path.Combine(dst, name));
+        foreach (var old in Directory.GetFiles(dst))
+            if (!names.Contains(System.IO.Path.GetFileName(old)) && !System.IO.Path.GetFileName(old).StartsWith('.'))
+                File.Delete(old);
+        if (names.Count > 0) copied.Add($"{LicenseFolder}/ ({names.Count})");
+        return copied;
+
+        static bool PlainFile(string path) => File.Exists(path) && new FileInfo(path).LinkTarget is null;
+
+        static void CopyOver(string source, string destination)
+        {
+            var temp = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(destination)!, "." + System.IO.Path.GetFileName(destination) + ".new");
+            try
+            {
+                File.Copy(source, temp, overwrite: true);
+                File.Move(temp, destination, overwrite: true);
+            }
+            finally
+            {
+                try { File.Delete(temp); } catch { /* gone already, the usual case */ }
+            }
+        }
+    }
+
+    /// <summary>
+    /// <see cref="CopyLicenses"/> for install and update: the log line either way, and a failure
+    /// only logged.
+    /// </summary>
+    public static void CopyLicensesLogged(string from, string to, string tag)
+    {
+        try
+        {
+            var copied = CopyLicenses(from, to);
+            if (copied.Count > 0) Console.WriteLine($"[{tag}] licenses: {string.Join(", ", copied)} into {to}");
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            Console.WriteLine($"[{tag}] licenses not copied into {to}: {ex.Message}");
+        }
+    }
 }

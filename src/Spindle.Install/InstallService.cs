@@ -214,8 +214,9 @@ public static class InstallService
     /// Copy this executable into the install directory and register it. Returns the path of the
     /// installed copy, which the caller should launch before exiting. A single-file build has its
     /// native libraries inside it; a Native AOT build (0.8) has them beside it, and those named in
-    /// <see cref="InstallLayout.NativeLibraries(bool)"/> go first, then the program. Nothing else
-    /// beside it is copied: a loose copy may be sitting in Downloads. Settings live in
+    /// <see cref="InstallLayout.NativeLibraries(bool)"/> go first, then the program, then the license
+    /// files (<see cref="InstallLayout.CopyLicenses"/>). Nothing else beside it is copied: a loose
+    /// copy may be sitting in Downloads. Settings live in
     /// <see cref="DataDir"/> either way.
     /// </summary>
     public static InstallResult Install()
@@ -257,6 +258,9 @@ public static class InstallService
                 throw new InstallBlockedException(
                     $"Could not write to {InstallDirectory}. Check the folder's permissions.", ex);
             }
+            // And what the licenses ask to travel with it, from the same folder (a release zip
+            // has them beside the program); a failure here never stops the install.
+            InstallLayout.CopyLicensesLogged(ExeDirectory, InstallDirectory, "install");
         }
 
         if (!OperatingSystem.IsWindows()) MakeExecutable(target);
