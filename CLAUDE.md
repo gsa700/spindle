@@ -114,3 +114,10 @@ change) and releasing.
   only the program and its libraries). Before, no installed copy had them
   (Techbench, Mobilenode). Tests: LicenseCopyTests. The Mac bundle carries them
   in Contents/Resources.
+- `NativeLoading` in Spindle.Core (2026-11-05): Marginal's NativeLoading
+  (security review 2026-10-31, C2), made app-neutral for AlbumWall and
+  Deadwax. Libraries other than those an app ships beside itself (AppInfo's
+  NativeLibraries, handed to Install) come from the system's places first, for
+  Spindle's and Avalonia's assemblies and those the app names; the Mac is left
+  to library validation. An assembly with its own resolver (AlbumWall.Domain's
+  libFLAC) calls Resolve/FromSystem from it. Tests: NativeLoadingTests.
