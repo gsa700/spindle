@@ -20,7 +20,7 @@ change here when its pin is moved forward and it is released.
     FFmpeg does it.
   - `src/Spindle.Playback`: the engine and an output for each system
     (CoreAudio's AudioQueue on the Mac, WASAPI on Windows, PulseAudio or
-    PipeWire on Linux), the equalizer and the spectrum.
+    PipeWire on Linux, OSS on FreeBSD), the equalizer and the spectrum.
 
 - **`src/Spindle.Core`**, the small things every app needs alike:
   `VersionOrder` (how release versions order, pre-releases included),

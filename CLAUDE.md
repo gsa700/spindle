@@ -121,3 +121,11 @@ change) and releasing.
   Spindle's and Avalonia's assemblies and those the app names; the Mac is left
   to library validation. An assembly with its own resolver (AlbumWall.Domain's
   libFLAC) calls Resolve/FromSystem from it. Tests: NativeLoadingTests.
+- `OssOutput` in Spindle.Playback (2026-11-07): Hymie's output on FreeBSD,
+  through OSS (/dev/dsp, the kernel's sound(4)); no daemon or library to
+  install, unlike PulseAudio, which a stock FreeBSD desktop lacks. 32-bit
+  integer samples, the kernel's virtual channels mix it with other programs
+  (bit-perfect mode, if a user turns it on, makes the device exclusive);
+  pause, clock and end work as in PulseOutput. Checked on Hubble (FreeBSD
+  15.1, Realtek ALC235): engine-check play, and AlbumWall heard through the
+  headphones, pausing and playing beside Firefox.

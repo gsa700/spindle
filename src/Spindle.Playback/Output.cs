@@ -41,10 +41,12 @@ internal static class Output
 {
     /// Whether Hymie has an output on this machine.
     public static bool IsAvailable => OperatingSystem.IsMacOS() || OperatingSystem.IsWindows()
-                                      || (OperatingSystem.IsLinux() && PulseOutput.IsAvailable);
+                                      || (OperatingSystem.IsLinux() && PulseOutput.IsAvailable)
+                                      || (OperatingSystem.IsFreeBSD() && OssOutput.IsAvailable);
 
     public static IOutput Open(int sampleRate, int channels, IOutput.Source source) =>
         OperatingSystem.IsMacOS() ? new AudioQueueOutput(sampleRate, channels, source)
         : OperatingSystem.IsWindows() ? new WasapiOutput(sampleRate, channels, source)
+        : OperatingSystem.IsFreeBSD() ? new OssOutput(sampleRate, channels, source)
         : new PulseOutput(sampleRate, channels, source);
 }
