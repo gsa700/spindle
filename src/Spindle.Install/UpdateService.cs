@@ -92,17 +92,21 @@ public static class UpdateService
     /// The version this copy reports, without the source-revision suffix.
     public static string CurrentVersion => InstallService.CurrentVersion;
 
-    /// The Native AOT package for this system: Marginal-linux-x64-aot.zip.
+    /// The Native AOT package for this system: Marginal-linux-x64-aot.zip,
+    /// Marginal-freebsd-x64-aot.zip.
     public static string AotAssetName => $"{AppInfo.Current.Name}-{Rid()}-aot.zip";
 
-    /// The runtime identifier in the asset name: linux-x64, linux-arm64.
-    public static string Rid()
-    {
-        var arch = RuntimeInformation.OSArchitecture == Architecture.Arm64 ? "arm64" : "x64";
-        if (OperatingSystem.IsWindows()) return $"win-{arch}";
-        if (OperatingSystem.IsMacOS()) return $"osx-{arch}";
-        return $"linux-{arch}";
-    }
+    /// The runtime identifier in the asset name: linux-x64, linux-arm64,
+    /// freebsd-x64. FreeBSD has its own: before 2026-11-07 it fell through to
+    /// linux-x64 and a FreeBSD copy was offered the Linux build, which cannot
+    /// run there. A release without a FreeBSD zip is now "no build for this
+    /// system", as for any other.
+    public static string Rid() => RidFor(
+        OperatingSystem.IsWindows() ? "win" : OperatingSystem.IsMacOS() ? "osx" : OperatingSystem.IsFreeBSD() ? "freebsd" : "linux",
+        RuntimeInformation.OSArchitecture);
+
+    internal static string RidFor(string os, Architecture architecture) =>
+        $"{os}-{(architecture == Architecture.Arm64 ? "arm64" : "x64")}";
 
     /// Stable: the latest full release. Edge: the release list, newest taken
     /// (ReleaseFeed). MARGINAL_UPDATE_FEED replaces either; it must serve the
@@ -148,20 +152,18 @@ public static class UpdateService
             throw new InvalidOperationException($"The download was redirected to {u.Host}, not GitHub. Nothing was installed.");
     }
 
-    /// On Linux .NET does TLS and hashing through the system's OpenSSL, loaded
-    /// by name the first time either is used. If no version it knows is there
-    /// the runtime prints "No usable version of libssl was found" and ABORTS
-    /// THE PROCESS, uncatchable: Fedora 45 did that to AlbumWall mid-song
-    /// (2026-09-21). So look first, with the names the runtime itself tries
-    /// (dotnet/runtime opensslshim.c), and treat "none" as a reason not to
-    /// update rather than a crash. CLR_OPENSSL_VERSION_OVERRIDE is honoured.
+    /// On Linux and FreeBSD .NET does TLS and hashing through the system's
+    /// OpenSSL, loaded by name the first time either is used. If no version it
+    /// knows is there the runtime prints "No usable version of libssl was
+    /// found" and ABORTS THE PROCESS, uncatchable: Fedora 45 did that to
+    /// AlbumWall mid-song (2026-09-21), and FreeBSD 15 (libssl.so.35) to every
+    /// .NET 10 build until our runtime took the upstream fix (2026-11-07). So
+    /// look first, with the names the runtime itself tries (TlsNames), and treat
+    /// "none" as a reason not to update rather than a crash.
     private static readonly Lazy<string?> MissingTls = new(() =>
     {
-        if (!OperatingSystem.IsLinux()) return null;
-        var names = new List<string>();
-        if (Environment.GetEnvironmentVariable("CLR_OPENSSL_VERSION_OVERRIDE") is { Length: > 0 } v)
-            names.Add($"libssl.so.{v}");
-        names.AddRange(["libssl.so.3", "libssl.so.1.1", "libssl.so.1.0.2", "libssl.so.1.0.0", "libssl.so.10"]);
+        if (!OperatingSystem.IsLinux() && !OperatingSystem.IsFreeBSD()) return null;
+        var names = TlsNames(OperatingSystem.IsFreeBSD(), Environment.GetEnvironmentVariable("DOTNET_OPENSSL_VERSION_OVERRIDE"));
         foreach (var name in names)
             if (NativeLibrary.TryLoad(name, out var handle))
             {
@@ -169,9 +171,24 @@ public static class UpdateService
                 return null;
             }
         Console.WriteLine($"[update] no libssl .NET can use (tried {string.Join(", ", names)}); updates are off");
-        return "This computer has no version of OpenSSL that .NET can use, so " + AppInfo.Current.Name + " cannot check for "
-             + "updates. On Fedora, installing openssl3-libs fixes it.";
+        return "This computer has no version of OpenSSL that .NET can use, so " + AppInfo.Current.Name + " cannot check for updates."
+             + (OperatingSystem.IsFreeBSD() ? "" : " On Fedora, installing openssl3-libs fixes it.");
     });
+
+    /// The libssl names .NET 10's runtime tries, in its order
+    /// (src/native/libs/System.Security.Cryptography.Native/opensslshim.c):
+    /// DOTNET_OPENSSL_VERSION_OVERRIDE first (CLR_OPENSSL_VERSION_OVERRIDE
+    /// until .NET 9, read here until 2026-11-07), then the common names, then
+    /// FreeBSD's own, with 3.5's (.17 from ports, .35 in FreeBSD 15's base)
+    /// as backported from upstream into the runtime the FreeBSD builds use.
+    internal static List<string> TlsNames(bool freeBsd, string? versionOverride)
+    {
+        var names = new List<string>();
+        if (!string.IsNullOrEmpty(versionOverride)) names.Add($"libssl.so.{versionOverride}");
+        names.AddRange(["libssl.so.3", "libssl.so.1.1", "libssl.so.1.0.2", "libssl.so.1.0.0", "libssl.so.10"]);
+        if (freeBsd) names.AddRange(["libssl.so.17", "libssl.so.35", "libssl.so.12", "libssl.so.30", "libssl.so.11", "libssl.so.111"]);
+        return names;
+    }
 
     public static async Task<UpdateInfo> CheckAsync(bool edge = false)
     {
@@ -413,11 +430,22 @@ public static class UpdateService
 
     private static async Task<bool> IsBinaryForThisSystemAsync(string path)
     {
-        var head = new byte[4];
+        var head = new byte[8];
         await using (var fs = File.OpenRead(path)) _ = await fs.ReadAsync(head);
         return OperatingSystem.IsWindows() ? head[0] == 'M' && head[1] == 'Z'
             : OperatingSystem.IsMacOS() ? (head[0] == 0xCF && head[1] == 0xFA && head[2] == 0xED && head[3] == 0xFE) || (head[0] == 0xCA && head[1] == 0xFE && head[2] == 0xBA && head[3] == 0xBE)
-            : head[0] == 0x7F && head[1] == 'E' && head[2] == 'L' && head[3] == 'F';
+            : IsElfFor(head, OperatingSystem.IsFreeBSD());
+    }
+
+    /// An ELF program, and for the right system: ELF's OSABI byte (offset 7)
+    /// is 9 in a FreeBSD program (its linker marks every one) and 0 or 3 in a
+    /// Linux one, so a Linux build cannot pass for a FreeBSD one or the other
+    /// way round. "ELF" alone let either through on both (2026-11-07).
+    internal static bool IsElfFor(ReadOnlySpan<byte> head, bool freeBsd)
+    {
+        const byte FreeBsdAbi = 9;
+        return head.Length >= 8 && head[0] == 0x7F && head[1] == 'E' && head[2] == 'L' && head[3] == 'F'
+            && (head[7] == FreeBsdAbi) == freeBsd;
     }
 
     private static HttpRequestMessage Request(string url, string agent)

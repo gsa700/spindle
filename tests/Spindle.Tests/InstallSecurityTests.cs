@@ -154,4 +154,44 @@ public class InstallSecurityTests
         }
         finally { Environment.SetEnvironmentVariable(AppInfo.Current.FeedVariable, was); }
     }
+
+    // ---- the right build for the system (FreeBSD, 2026-11-07) -----------------
+
+    [Theory]
+    [InlineData("freebsd", System.Runtime.InteropServices.Architecture.X64, "freebsd-x64")]
+    [InlineData("freebsd", System.Runtime.InteropServices.Architecture.Arm64, "freebsd-arm64")]
+    [InlineData("linux", System.Runtime.InteropServices.Architecture.X64, "linux-x64")]
+    [InlineData("osx", System.Runtime.InteropServices.Architecture.Arm64, "osx-arm64")]
+    [InlineData("win", System.Runtime.InteropServices.Architecture.X64, "win-x64")]
+    public void Each_system_asks_for_its_own_build(string os, System.Runtime.InteropServices.Architecture arch, string rid) =>
+        Assert.Equal(rid, UpdateService.RidFor(os, arch));
+
+    // The first eight bytes of real programs: AlbumWall's Linux release (OSABI 3),
+    // Fedora's /usr/bin/true (0), AlbumWall built on FreeBSD 15 (9).
+    private static readonly byte[] LinuxGnuElf = [0x7F, (byte)'E', (byte)'L', (byte)'F', 2, 1, 1, 3];
+    private static readonly byte[] LinuxSysvElf = [0x7F, (byte)'E', (byte)'L', (byte)'F', 2, 1, 1, 0];
+    private static readonly byte[] FreeBsdElf = [0x7F, (byte)'E', (byte)'L', (byte)'F', 2, 1, 1, 9];
+
+    [Fact]
+    public void A_Linux_program_is_not_taken_as_a_FreeBSD_one_or_the_other_way_round()
+    {
+        Assert.True(UpdateService.IsElfFor(FreeBsdElf, freeBsd: true));
+        Assert.False(UpdateService.IsElfFor(LinuxGnuElf, freeBsd: true));
+        Assert.False(UpdateService.IsElfFor(LinuxSysvElf, freeBsd: true));
+        Assert.True(UpdateService.IsElfFor(LinuxGnuElf, freeBsd: false));
+        Assert.True(UpdateService.IsElfFor(LinuxSysvElf, freeBsd: false));
+        Assert.False(UpdateService.IsElfFor(FreeBsdElf, freeBsd: false));
+        Assert.False(UpdateService.IsElfFor("MZ\0\0\0\0\0\0"u8, freeBsd: true));
+        Assert.False(UpdateService.IsElfFor(FreeBsdElf.AsSpan(0, 4), freeBsd: true));
+    }
+
+    [Fact]
+    public void The_libssl_names_are_the_runtimes_with_FreeBSDs_own_after_them()
+    {
+        Assert.Equal(["libssl.so.3", "libssl.so.1.1", "libssl.so.1.0.2", "libssl.so.1.0.0", "libssl.so.10"],
+            UpdateService.TlsNames(freeBsd: false, versionOverride: null));
+        var bsd = UpdateService.TlsNames(freeBsd: true, versionOverride: null);
+        Assert.Equal(["libssl.so.17", "libssl.so.35", "libssl.so.12", "libssl.so.30", "libssl.so.11", "libssl.so.111"], bsd[5..]);
+        Assert.Equal("libssl.so.35", UpdateService.TlsNames(freeBsd: false, versionOverride: "35")[0]);
+    }
 }
