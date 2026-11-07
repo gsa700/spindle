@@ -138,3 +138,14 @@ change) and releasing.
   libc.so.7, so every other libc function is found through it). Checked on
   Hubble with AlbumWall installed and nothing added by hand. Tests:
   NativeLoadingTests.
+- `tools/build-libskiasharp.sh` (2026-11-07): builds libSkiaSharp.so for
+  FreeBSD for a given SkiaSharp version (SkiaSharp ships none; the
+  graphics/libskiasharp port lags). The Skia commit comes from the NuGet
+  package's own source commit (its nuspec), then mono/SkiaSharp's
+  externals/skia at that commit; the port's patches are applied, skipped when
+  Skia already has them, and stop the build when they neither apply nor are
+  known to be superseded; only the gn switches that Skia declares are passed.
+  BUILD-INFO.txt records the commits, the patches and a sha256. Checked on
+  Hubble: 3.119.4 (Skia 119, 812 sk_ exports, the same as the hand build the
+  FreeBSD AlbumWall ran on) and 4.155.0 (Skia 155, 877 exports; a SkiaSharp
+  4.155 program drew and encoded a PNG through it).
