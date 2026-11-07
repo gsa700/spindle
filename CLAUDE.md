@@ -129,3 +129,12 @@ change) and releasing.
   pause, clock and end work as in PulseOutput. Checked on Hubble (FreeBSD
   15.1, Realtek ALC235): engine-check play, and AlbumWall heard through the
   headphones, pausing and playing beside Firefox.
+- FreeBSD platform support (2026-11-07): `SystemPlatform.UseSystemPlatform()`
+  in Spindle.Ui, which the apps call where they had UsePlatformDetect (that
+  configures nothing on FreeBSD; there it is X11, Skia and HarfBuzz; Spindle.Ui
+  references Avalonia.Desktop for it, at the apps' version), and in
+  NativeLoading, "libc" answered on FreeBSD by the system's libepoll-shim.so.0
+  (Avalonia's X11 code imports Linux's epoll from "libc"; the shim needs
+  libc.so.7, so every other libc function is found through it). Checked on
+  Hubble with AlbumWall installed and nothing added by hand. Tests:
+  NativeLoadingTests.

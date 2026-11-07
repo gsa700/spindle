@@ -19,6 +19,14 @@ public class NativeLoadingTests
     public void Only_the_shipped_libraries_come_from_beside_the_program(string library, bool beside) =>
         Assert.Equal(beside, NativeLoading.IsBeside(library, Shipped));
 
+    [Theory]
+    [InlineData("libc", true, "libepoll-shim.so.0")]
+    [InlineData("libc", false, "libc")]
+    [InlineData("libc.so.7", true, "libc.so.7")]
+    [InlineData("libX11.so.6", true, "libX11.so.6")]
+    public void On_FreeBSD_libc_is_answered_by_epoll_shim_for_Avalonias_epoll(string library, bool freeBsd, string system) =>
+        Assert.Equal(system, NativeLoading.SystemName(library, freeBsd));
+
     [Fact]
     public void A_library_the_system_lacks_falls_back_to_the_default_search() =>
         Assert.Equal(IntPtr.Zero, NativeLoading.Resolve("libspindle-no-such-library.so.9", typeof(NativeLoadingTests).Assembly, null));

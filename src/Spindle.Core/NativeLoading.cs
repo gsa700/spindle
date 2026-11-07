@@ -65,7 +65,18 @@ public static class NativeLoading
     /// A handle from the system's own places, or zero for the default search
     /// (a shipped library, a library the system lacks, or any library on a Mac).
     public static IntPtr Resolve(string library, Assembly assembly, DllImportSearchPath? searchPath) =>
-        IsBeside(library, _beside) ? IntPtr.Zero : FromSystem(library, assembly);
+        IsBeside(library, _beside) ? IntPtr.Zero : FromSystem(SystemName(library, OperatingSystem.IsFreeBSD()), assembly);
+
+    /// The system library that answers for <paramref name="library"/>. On
+    /// FreeBSD, "libc" is the epoll-shim package's library: Avalonia's X11 code
+    /// imports Linux's epoll_create1, epoll_ctl and epoll_wait from "libc", and
+    /// FreeBSD has kqueue instead. libepoll-shim.so.0 has those, and needs
+    /// libc.so.7, so every other function asked of "libc" is found through it
+    /// too (a handle's lookup searches what it depends on). Not
+    /// libepoll-shim-interpose, which also takes over read and close for every
+    /// descriptor. The apps' FreeBSD package depends on devel/libepoll-shim.
+    internal static string SystemName(string library, bool freeBsd) =>
+        freeBsd && library == "libc" ? "libepoll-shim.so.0" : library;
 
     /// The library from the system's places only, never the program's folder;
     /// zero when the system has none (and always on a Mac).
