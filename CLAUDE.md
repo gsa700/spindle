@@ -149,3 +149,13 @@ change) and releasing.
   Hubble: 3.119.4 (Skia 119, 812 sk_ exports, the same as the hand build the
   FreeBSD AlbumWall ran on) and 4.155.0 (Skia 155, 877 exports; a SkiaSharp
   4.155 program drew and encoded a PNG through it).
+- `ScaleFollow.Keep(window)` in Spindle.Ui (2026-11-07, Vergence Mode B): on
+  X11 a window with a size of its own keeps that size, in its own units,
+  across a move to a monitor with another scale. Avalonia switches the scale
+  mid-drag and asks for a resize the window manager does not grant during a
+  move, so the window shrank with every crossing (AlbumWall 940 -> 613 -> 585
+  units on Hubble). The size is taken when a drag starts or the person
+  resizes a still window, and put back once the window is still after a move
+  in which the scale changed: fitted to a smaller screen, remembered whole for
+  the way back. Does nothing on Windows, macOS or native Wayland. Checked on
+  Hubble (ASUS 1.07 / 14" 4K 1.64) with AlbumWall, by script and by hand.
