@@ -10,9 +10,9 @@
 // Mac keeps its system title bar here (Deadwax extends its own under the top bar);
 // a hairline edge, the windows being light; owned windows get Close only.
 //
-// Why Marginal draws its own (Dave, 2026-10-31): under XWayland ("Backend": "x11")
-// GNOME's X11 frame has rounded top corners above a window with square bottom
-// ones; on native Wayland Avalonia's drawn title bar does not maximize on a double
+// Why Marginal draws its own (Dave, 2026-10-31): under XWayland (then a GNOME
+// setting, dropped 2026-11-11) GNOME's X11 frame has rounded top corners above
+// a window with square bottom ones; on native Wayland Avalonia's drawn title bar does not maximize on a double
 // click. Drawn here, every window has 12 px corners all round, the desktop's own
 // buttons and both behaviours.
 //
