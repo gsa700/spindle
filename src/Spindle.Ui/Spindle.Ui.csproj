@@ -7,10 +7,10 @@
        upgrade changes it here and in each app together. -->
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="12.1.5" />
+    <PackageReference Include="Avalonia" Version="12.1.6" />
     <!-- UseX11, UseSkia and UseHarfBuzz for SystemPlatform (FreeBSD); every
          app references Avalonia.Desktop already, at the same version. -->
-    <PackageReference Include="Avalonia.Desktop" Version="12.1.5" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.6" />
   </ItemGroup>
 
   <ItemGroup>
